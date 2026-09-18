@@ -127,11 +127,50 @@
   }
   .field-error.show { display: block; }
   .presenter { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+  .meta-row {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .meta-field { flex: 1; min-width: 180px; }
+  .meta-field label {
+    display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.03em; margin-bottom: 4px;
+  }
+  .meta-field input {
+    width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--input-bg); color: var(--text); font-size: 1rem; font-weight: 600;
+  }
+  .headline {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px;
+  }
+  .headline .stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 10px; text-align: center;
+  }
+  .headline .stat.emphasis { background: var(--accent-bg); border-color: var(--accent); }
+  .headline .stat-label {
+    font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em;
+    margin-bottom: 6px;
+  }
+  .headline .stat-value {
+    font-size: 1.25rem; font-weight: 700; color: var(--text);
+  }
+  .headline .stat.emphasis .stat-value { color: var(--accent); }
+  .headline .stat-value.negative { color: var(--danger); }
+  @media (max-width: 600px) {
+    .headline { grid-template-columns: repeat(2, 1fr); }
+  }
   @media print {
-    .toolbar, .curr-row, .banner { display: none !important; }
+    .toolbar, .curr-row { display: none !important; }
     body { background: #fff; padding: 0; }
     .card { border: 1px solid #ccc; break-inside: avoid; }
     input { border: none !important; background: none !important; -webkit-appearance: none; }
+    .banner {
+      background: none !important; color: #000 !important; border: 1px solid #000;
+    }
+    .headline .stat { border: 1px solid #ccc; break-inside: avoid; }
+    .headline .stat.emphasis { background: none !important; border: 1px solid #000; }
+    .headline .stat.emphasis .stat-value { color: #000 !important; }
+    .meta-field input { font-size: 1.1rem; }
   }
 </style>
 </head>
@@ -148,6 +187,36 @@
 
   <div class="curr-row">
     Currency label: <input id="curr" value="SAR" oninput="recalc()">
+  </div>
+
+  <div class="meta-row">
+    <div class="meta-field">
+      <label>Business</label>
+      <input id="biz_name" value="Your Supermarket Name" oninput="recalc()">
+    </div>
+    <div class="meta-field">
+      <label>Reporting period</label>
+      <input id="period" value="September 2026 — Sample" oninput="recalc()">
+    </div>
+  </div>
+
+  <div class="headline">
+    <div class="stat">
+      <div class="stat-label">Revenue</div>
+      <div class="stat-value" id="h_rev">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Gross Profit</div>
+      <div class="stat-value" id="h_gp">0</div>
+    </div>
+    <div class="stat emphasis">
+      <div class="stat-label">Net Profit</div>
+      <div class="stat-value" id="h_net">0</div>
+    </div>
+    <div class="stat emphasis">
+      <div class="stat-label">Net Cash Position</div>
+      <div class="stat-value" id="h_cash">0</div>
+    </div>
   </div>
 
   <div class="card">
@@ -222,6 +291,8 @@
 <script>
 const DEFAULTS = {
   curr: "SAR",
+  biz_name: "Your Supermarket Name",
+  period: "September 2026 — Sample",
   cash_sales: 180000, card_sales: 150000, other_income: 20000,
   open_inv: 180000, purchases: 160000, close_inv: 190000,
   salaries: 35000, rent: 15000, electricity: 7500, transport: 4500,
@@ -274,10 +345,21 @@ function recalc(){
   netCashEl.textContent = "Net cash position: " + fmt(netCash, curr);
   netCashEl.classList.toggle('negative', netCash < 0);
 
+  document.getElementById('h_rev').textContent = fmt(totalRev, curr);
+  document.getElementById('h_gp').textContent = fmt(gp, curr);
+  const hNet = document.getElementById('h_net');
+  hNet.textContent = fmt(net, curr);
+  hNet.classList.toggle('negative', net < 0);
+  const hCash = document.getElementById('h_cash');
+  hCash.textContent = fmt(netCash, curr);
+  hCash.classList.toggle('negative', netCash < 0);
+
+  document.title = (document.getElementById('biz_name').value || "Supermarket") + " — Financial Close Demo";
+
   try { localStorage.setItem('supermarket_demo_state', JSON.stringify(collectState())); } catch(e) {}
 }
 function collectState(){
-  const ids = ['curr','cash_sales','card_sales','other_income','open_inv','purchases','close_inv',
+  const ids = ['curr','biz_name','period','cash_sales','card_sales','other_income','open_inv','purchases','close_inv',
     'salaries','rent','electricity','transport','maintenance','internet','other_exp',
     'cash_on_hand','bank_balance','card_pending','payables','receivables'];
   const s = {};
