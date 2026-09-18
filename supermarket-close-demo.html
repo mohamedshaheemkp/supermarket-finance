@@ -108,12 +108,43 @@
   @media (max-width: 480px) {
     .row input { width: 100px; }
   }
+  .banner {
+    background: var(--accent-bg); border: 1px solid var(--accent); color: var(--accent);
+    font-weight: 700; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase;
+    text-align: center; padding: 6px; border-radius: 8px; margin-bottom: 16px;
+  }
+  .toolbar {
+    display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-size: 0.85rem; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .row input.invalid { border-color: var(--danger); }
+  .field-error {
+    font-size: 0.72rem; color: var(--danger); text-align: right; margin-top: -4px; margin-bottom: 4px; display: none;
+  }
+  .field-error.show { display: block; }
+  .presenter { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+  @media print {
+    .toolbar, .curr-row, .banner { display: none !important; }
+    body { background: #fff; padding: 0; }
+    .card { border: 1px solid #ccc; break-inside: avoid; }
+    input { border: none !important; background: none !important; -webkit-appearance: none; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="banner">Demo — Sample Data, Not Real Figures</div>
   <h1>🛒 Supermarket Financial Close — Demo</h1>
   <div class="subtitle">Sample figures shown below. Edit any number to model a real month's numbers.</div>
+
+  <div class="toolbar">
+    <button class="btn" onclick="resetSample()">↺ Reset sample data</button>
+    <button class="btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+  </div>
 
   <div class="curr-row">
     Currency label: <input id="curr" value="SAR" oninput="recalc()">
@@ -122,26 +153,39 @@
   <div class="card">
     <h2>Revenue</h2>
     <div class="row"><label>Cash sales</label><input type="number" id="cash_sales" value="180000" oninput="recalc()"></div>
+    <div class="field-error" id="err_cash_sales">Negative treated as 0</div>
     <div class="row"><label>Card sales</label><input type="number" id="card_sales" value="150000" oninput="recalc()"></div>
+    <div class="field-error" id="err_card_sales">Negative treated as 0</div>
     <div class="row"><label>Other income</label><input type="number" id="other_income" value="20000" oninput="recalc()"></div>
+    <div class="field-error" id="err_other_income">Negative treated as 0</div>
   </div>
 
   <div class="card">
     <h2>Cost of Goods Sold</h2>
     <div class="row"><label>Opening inventory</label><input type="number" id="open_inv" value="180000" oninput="recalc()"></div>
+    <div class="field-error" id="err_open_inv">Negative treated as 0</div>
     <div class="row"><label>Purchases</label><input type="number" id="purchases" value="160000" oninput="recalc()"></div>
+    <div class="field-error" id="err_purchases">Negative treated as 0</div>
     <div class="row"><label>Closing inventory</label><input type="number" id="close_inv" value="190000" oninput="recalc()"></div>
+    <div class="field-error" id="err_close_inv">Negative treated as 0</div>
   </div>
 
   <div class="card">
     <h2>Operating Expenses</h2>
     <div class="row"><label>Salaries</label><input type="number" id="salaries" value="35000" oninput="recalc()"></div>
+    <div class="field-error" id="err_salaries">Negative treated as 0</div>
     <div class="row"><label>Rent</label><input type="number" id="rent" value="15000" oninput="recalc()"></div>
+    <div class="field-error" id="err_rent">Negative treated as 0</div>
     <div class="row"><label>Electricity</label><input type="number" id="electricity" value="7500" oninput="recalc()"></div>
+    <div class="field-error" id="err_electricity">Negative treated as 0</div>
     <div class="row"><label>Transport</label><input type="number" id="transport" value="4500" oninput="recalc()"></div>
+    <div class="field-error" id="err_transport">Negative treated as 0</div>
     <div class="row"><label>Maintenance</label><input type="number" id="maintenance" value="2000" oninput="recalc()"></div>
+    <div class="field-error" id="err_maintenance">Negative treated as 0</div>
     <div class="row"><label>Internet / phone</label><input type="number" id="internet" value="1000" oninput="recalc()"></div>
+    <div class="field-error" id="err_internet">Negative treated as 0</div>
     <div class="row"><label>Other expenses</label><input type="number" id="other_exp" value="3000" oninput="recalc()"></div>
+    <div class="field-error" id="err_other_exp">Negative treated as 0</div>
   </div>
 
   <div class="card summary">
@@ -156,10 +200,15 @@
   <div class="card">
     <h2>Cash Position (manual entry)</h2>
     <div class="row"><label>Cash on hand</label><input type="number" id="cash_on_hand" value="25000" oninput="recalc()"></div>
+    <div class="field-error" id="err_cash_on_hand">Negative treated as 0</div>
     <div class="row"><label>Bank balance</label><input type="number" id="bank_balance" value="60000" oninput="recalc()"></div>
+    <div class="field-error" id="err_bank_balance">Negative treated as 0</div>
     <div class="row"><label>Card settlements pending</label><input type="number" id="card_pending" value="12000" oninput="recalc()"></div>
+    <div class="field-error" id="err_card_pending">Negative treated as 0</div>
     <div class="row"><label>Supplier payables (we owe)</label><input type="number" id="payables" value="35000" oninput="recalc()"></div>
+    <div class="field-error" id="err_payables">Negative treated as 0</div>
     <div class="row"><label>Customer receivables (owed to us)</label><input type="number" id="receivables" value="8000" oninput="recalc()"></div>
+    <div class="field-error" id="err_receivables">Negative treated as 0</div>
     <div class="row total" id="r_netcash" style="border-top:2px solid var(--border); margin-top:6px; padding-top:10px;">Net cash position: 0</div>
   </div>
 
@@ -167,12 +216,37 @@
     This is a demo using placeholder figures — it shows the shape of the financial model, not real results.<br>
     Once real numbers are available (POS totals, supplier invoices, payroll, actual expenses), the same structure is filled in with actual data.
   </div>
+  <div class="presenter">Prepared by Mohamed Shaheem KP</div>
 </div>
 
 <script>
+const DEFAULTS = {
+  curr: "SAR",
+  cash_sales: 180000, card_sales: 150000, other_income: 20000,
+  open_inv: 180000, purchases: 160000, close_inv: 190000,
+  salaries: 35000, rent: 15000, electricity: 7500, transport: 4500,
+  maintenance: 2000, internet: 1000, other_exp: 3000,
+  cash_on_hand: 25000, bank_balance: 60000, card_pending: 12000,
+  payables: 35000, receivables: 8000
+};
+
 function num(id){
-  const v = parseFloat(document.getElementById(id).value);
-  return isNaN(v) ? 0 : v;
+  const el = document.getElementById(id);
+  let v = parseFloat(el.value);
+  if (isNaN(v)) v = 0;
+  const invalid = v < 0;
+  el.classList.toggle('invalid', invalid);
+  const errEl = document.getElementById('err_' + id);
+  if (errEl) errEl.classList.toggle('show', invalid);
+  return invalid ? 0 : v;
+}
+function resetSample(){
+  try { localStorage.removeItem('supermarket_demo_state'); } catch(e) {}
+  Object.keys(DEFAULTS).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = DEFAULTS[id];
+  });
+  recalc();
 }
 function fmt(n, curr){
   const sign = n < 0 ? "-" : "";
