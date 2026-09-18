@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Supermarket Financial Close — Demo</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --text: #1a1d23;
+    --muted: #6b7280;
+    --border: #e3e6ea;
+    --accent: #1f6f4a;
+    --accent-bg: #e8f4ee;
+    --danger: #b3261e;
+    --input-bg: #fbfbfc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a;
+      --card: #1d2025;
+      --text: #eceef1;
+      --muted: #9aa1ab;
+      --border: #30343b;
+      --accent: #4fbf88;
+      --accent-bg: #17281f;
+      --danger: #ff6b64;
+      --input-bg: #24272d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a;
+    --card: #1d2025;
+    --text: #eceef1;
+    --muted: #9aa1ab;
+    --border: #30343b;
+    --accent: #4fbf88;
+    --accent-bg: #17281f;
+    --danger: #ff6b64;
+    --input-bg: #24272d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 1rem;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .row:last-child { border-bottom: none; }
+  .row label { flex: 1; font-size: 0.92rem; }
+  .row input {
+    width: 130px;
+    max-width: 40%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    text-align: right;
+    font-size: 0.92rem;
+  }
+  .curr-row {
+    display: flex; justify-content: flex-end; align-items: center; gap: 8px;
+    margin-bottom: 14px; font-size: 0.85rem; color: var(--muted);
+  }
+  .curr-row input {
+    width: 60px; padding: 4px 6px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--input-bg); color: var(--text);
+    text-align: center;
+  }
+  .summary { background: var(--accent-bg); border: 1px solid var(--accent); }
+  .summary .row { border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+  .summary .total {
+    font-weight: 700; font-size: 1.15rem; color: var(--accent);
+    border-top: 2px solid var(--accent); margin-top: 6px; padding-top: 10px;
+  }
+  .total.negative { color: var(--danger); }
+  .note {
+    font-size: 0.8rem; color: var(--muted); text-align: center; margin-top: 24px;
+    line-height: 1.4;
+  }
+  @media (max-width: 480px) {
+    .row input { width: 100px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🛒 Supermarket Financial Close — Demo</h1>
+  <div class="subtitle">Sample figures shown below. Edit any number to model a real month's numbers.</div>
+
+  <div class="curr-row">
+    Currency label: <input id="curr" value="SAR" oninput="recalc()">
+  </div>
+
+  <div class="card">
+    <h2>Revenue</h2>
+    <div class="row"><label>Cash sales</label><input type="number" id="cash_sales" value="180000" oninput="recalc()"></div>
+    <div class="row"><label>Card sales</label><input type="number" id="card_sales" value="150000" oninput="recalc()"></div>
+    <div class="row"><label>Other income</label><input type="number" id="other_income" value="20000" oninput="recalc()"></div>
+  </div>
+
+  <div class="card">
+    <h2>Cost of Goods Sold</h2>
+    <div class="row"><label>Opening inventory</label><input type="number" id="open_inv" value="180000" oninput="recalc()"></div>
+    <div class="row"><label>Purchases</label><input type="number" id="purchases" value="160000" oninput="recalc()"></div>
+    <div class="row"><label>Closing inventory</label><input type="number" id="close_inv" value="190000" oninput="recalc()"></div>
+  </div>
+
+  <div class="card">
+    <h2>Operating Expenses</h2>
+    <div class="row"><label>Salaries</label><input type="number" id="salaries" value="35000" oninput="recalc()"></div>
+    <div class="row"><label>Rent</label><input type="number" id="rent" value="15000" oninput="recalc()"></div>
+    <div class="row"><label>Electricity</label><input type="number" id="electricity" value="7500" oninput="recalc()"></div>
+    <div class="row"><label>Transport</label><input type="number" id="transport" value="4500" oninput="recalc()"></div>
+    <div class="row"><label>Maintenance</label><input type="number" id="maintenance" value="2000" oninput="recalc()"></div>
+    <div class="row"><label>Internet / phone</label><input type="number" id="internet" value="1000" oninput="recalc()"></div>
+    <div class="row"><label>Other expenses</label><input type="number" id="other_exp" value="3000" oninput="recalc()"></div>
+  </div>
+
+  <div class="card summary">
+    <h2>Monthly Result</h2>
+    <div class="row"><label>Total revenue</label><span id="r_total_rev">0</span></div>
+    <div class="row"><label>Cost of goods sold</label><span id="r_cogs">0</span></div>
+    <div class="row"><label>Gross profit</label><span id="r_gp">0</span></div>
+    <div class="row"><label>Total operating expenses</label><span id="r_opex">0</span></div>
+    <div class="row total" id="r_net">Net profit: 0</div>
+  </div>
+
+  <div class="card">
+    <h2>Cash Position (manual entry)</h2>
+    <div class="row"><label>Cash on hand</label><input type="number" id="cash_on_hand" value="25000" oninput="recalc()"></div>
+    <div class="row"><label>Bank balance</label><input type="number" id="bank_balance" value="60000" oninput="recalc()"></div>
+    <div class="row"><label>Card settlements pending</label><input type="number" id="card_pending" value="12000" oninput="recalc()"></div>
+    <div class="row"><label>Supplier payables (we owe)</label><input type="number" id="payables" value="35000" oninput="recalc()"></div>
+    <div class="row"><label>Customer receivables (owed to us)</label><input type="number" id="receivables" value="8000" oninput="recalc()"></div>
+    <div class="row total" id="r_netcash" style="border-top:2px solid var(--border); margin-top:6px; padding-top:10px;">Net cash position: 0</div>
+  </div>
+
+  <div class="note">
+    This is a demo using placeholder figures — it shows the shape of the financial model, not real results.<br>
+    Once real numbers are available (POS totals, supplier invoices, payroll, actual expenses), the same structure is filled in with actual data.
+  </div>
+</div>
+
+<script>
+function num(id){
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? 0 : v;
+}
+function fmt(n, curr){
+  const sign = n < 0 ? "-" : "";
+  return sign + curr + " " + Math.abs(n).toLocaleString(undefined, {maximumFractionDigits: 0});
+}
+function recalc(){
+  const curr = document.getElementById('curr').value || "SAR";
+
+  const totalRev = num('cash_sales') + num('card_sales') + num('other_income');
+  const cogs = num('open_inv') + num('purchases') - num('close_inv');
+  const gp = totalRev - cogs;
+  const opex = num('salaries') + num('rent') + num('electricity') + num('transport') + num('maintenance') + num('internet') + num('other_exp');
+  const net = gp - opex;
+
+  document.getElementById('r_total_rev').textContent = fmt(totalRev, curr);
+  document.getElementById('r_cogs').textContent = fmt(cogs, curr);
+  document.getElementById('r_gp').textContent = fmt(gp, curr);
+  document.getElementById('r_opex').textContent = fmt(opex, curr);
+  const netEl = document.getElementById('r_net');
+  netEl.textContent = "Net profit: " + fmt(net, curr);
+  netEl.classList.toggle('negative', net < 0);
+
+  const netCash = num('cash_on_hand') + num('bank_balance') + num('card_pending') + num('receivables') - num('payables');
+  const netCashEl = document.getElementById('r_netcash');
+  netCashEl.textContent = "Net cash position: " + fmt(netCash, curr);
+  netCashEl.classList.toggle('negative', netCash < 0);
+
+  try { localStorage.setItem('supermarket_demo_state', JSON.stringify(collectState())); } catch(e) {}
+}
+function collectState(){
+  const ids = ['curr','cash_sales','card_sales','other_income','open_inv','purchases','close_inv',
+    'salaries','rent','electricity','transport','maintenance','internet','other_exp',
+    'cash_on_hand','bank_balance','card_pending','payables','receivables'];
+  const s = {};
+  ids.forEach(id => s[id] = document.getElementById(id).value);
+  return s;
+}
+function restoreState(){
+  try {
+    const raw = localStorage.getItem('supermarket_demo_state');
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    Object.keys(s).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = s[id];
+    });
+  } catch(e) {}
+}
+restoreState();
+recalc();
+</script>
+</body>
+</html>
